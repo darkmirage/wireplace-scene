@@ -1,3 +1,3 @@
-const testing = 'hi';
+import WirePlaceScene from './WirePlaceScene';
 
-export default testing;
+export { WirePlaceScene };

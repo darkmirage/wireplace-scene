@@ -1,5 +1,4 @@
 import { Vector3, Euler, Object3D } from 'three';
-import { v4 as uuidv4 } from 'uuid';
 
 // Serialization versioning
 const VERSION = 1;
@@ -11,31 +10,29 @@ type Actor = {
   up: Vector3;
 };
 
-type Update = Partial<Actor>;
-
-type UpdateMap = {
-  [actorId: string]: Update;
-};
+type Update = Partial<Actor> | false;
 
 type Diff = {
   v: number,
-  d: UpdateMap,
+  d: Record<string, Update>,
 };
 
 class WirePlaceScene {
   _version: number;
   _actors: Record<string, Actor>;
-  _updates: Record<string, UpdateMap>;
+  _updates: Record<string, Update>;
 
-  constructor() {
+  constructor(isMaster: boolean = false) {
     this._version = VERSION;
     this._actors = {};
     this._updates = {};
   }
 
-  _addActor(actorId: string) {
-    this._actors[actorId] = new Object3D();
-    this._updates[actorId] = {};
+  addActor(actorId: string) {
+    const obj = new Object3D();
+    this._actors[actorId] = obj;
+    const { position, rotation, scale, up } = obj;
+    this._updates[actorId] = { position, rotation, scale, up };
   }
 
   forEach(callback: (actor: Actor) => void) {
@@ -48,46 +45,35 @@ class WirePlaceScene {
     return actorId in this._actors;
   }
 
-  getActor(actorId: string): Actor | null {
-    return this._actors[actorId] || null;
-  }
-
-  registerActor(): string {
-    const actorId = uuidv4();
-    this._addActor(actorId);
-    return actorId;
-  }
-
   removeActor(actorId: string): boolean {
+    return this.updateActor(actorId, false);
+  }
+
+  updateActor(actorId: string, u: Update): boolean {
     if (!this.actorExists(actorId)) {
       return false;
     }
 
-    delete this._actors[actorId];
-    delete this._updates[actorId];
-    return true;
-  }
-
-  updateActor(actorId: string, update: Update): boolean {
-    if (!this.actorExists(actorId)) {
-      return false;
-    }
-
-    Object.assign(this._actors[actorId], update);
-    for (let listenerId in this._updates) {
-      if (!(actorId in this._updates[listenerId])) {
-        this._updates[listenerId][actorId] = {};
-      }
-      Object.assign(this._updates[listenerId][actorId], update);
+    if (u) {
+      Object.assign(this._actors[actorId], u);
+      const u_ = this._updates[actorId] || {};
+      Object.assign(u_, u);
+      this._updates[actorId] = u_;
+    } else {
+      delete this._actors[actorId];
+      delete this._updates[actorId];
+      this._updates[actorId] = false;
     }
     return true;
   }
 
-  retrieveDiff(actorId: string): string {
-    const updates = this._updates[actorId];
-    this._updates[actorId] = {};
+  retrieveDiff(): { count: number, data: string } {
+    const updates = this._updates;
+    this._updates = {};
     const diff = { v: this._version, d: updates };
-    return JSON.stringify(diff);
+    const data = JSON.stringify(diff);
+    const count = Object.keys(updates).length;
+    return { count, data };
   }
 
   applyDiff(data: string) {
@@ -99,16 +85,8 @@ class WirePlaceScene {
 
     const updates = diff.d;
     for (const actorId in updates) {
-      const update = updates[actorId];
-      if (!this.actorExists(actorId)) {
-        this._addActor(actorId);
-      }
-      const actor = this._actors[actorId];
-
-      for (const key in update) {
-        const attribute: keyof Update = <any>key;
-        Object.assign(actor[attribute], update[attribute]);
-      }
+      const u = updates[actorId];
+      this.updateActor(actorId, u);
     }
   }
 }

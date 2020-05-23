@@ -2,7 +2,8 @@
   "name": "wireplace-scene",
   "version": "1.0.0",
   "description": "Scene graph of WirePlace",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "scripts": {
     "build": "tsc",
     "lint": "prettier --write --single-quote **/*.ts"
@@ -14,8 +15,6 @@
     "typescript": "^3.9.3"
   },
   "dependencies": {
-    "@types/uuid": "^8.0.0",
-    "three": "^0.116.1",
-    "uuid": "^8.1.0"
+    "three": "^0.116.1"
   }
 }
