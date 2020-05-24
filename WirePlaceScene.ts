@@ -67,8 +67,11 @@ class WirePlaceScene extends EventEmitter {
   onActorUpdate(
     actorId: string,
     callback: (update: Update, actor: Actor) => void
-  ) {
+  ): () => void {
     this.on(actorId, callback);
+    return () => {
+      this.off(actorId, callback);
+    };
   }
 
   addActor(actorId: string) {
