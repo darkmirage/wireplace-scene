@@ -64,6 +64,10 @@ class WirePlaceScene extends EventEmitter {
     this._updates = {};
   }
 
+  clear() {
+    this.forEach((actor, actorId) => this.removeActor(actorId));
+  }
+
   onActorUpdate(
     actorId: string,
     callback: (update: Update, actor: Actor) => void
@@ -82,9 +86,9 @@ class WirePlaceScene extends EventEmitter {
     return this._actors[actorId] || null;
   }
 
-  forEach(callback: (actor: Actor) => void) {
+  forEach(callback: (actor: Actor, actorId: string) => void) {
     for (const actorId in this._actors) {
-      callback(this._actors[actorId]);
+      callback(this._actors[actorId], actorId);
     }
   }
 
