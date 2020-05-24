@@ -1,3 +1,5 @@
+import { EventEmitter } from 'events';
+
 // Serialization versioning
 const VERSION = 1;
 
@@ -8,6 +10,8 @@ export type Vector3 = {
 };
 
 export type Actor = {
+  speed: number;
+  color: number;
   position: Vector3;
   rotation: Vector3;
   scale: Vector3;
@@ -23,6 +27,8 @@ export type Diff = {
 
 function createNewActor(): Actor {
   return {
+    speed: 1.4,
+    color: 0,
     position: {
       x: 0,
       y: 0,
@@ -34,31 +40,43 @@ function createNewActor(): Actor {
       z: 0,
     },
     scale: {
-      x: 0,
-      y: 0,
-      z: 0,
+      x: 1.0,
+      y: 1.0,
+      z: 1.0,
     },
     up: {
       x: 0,
-      y: 0,
+      y: 1.0,
       z: 0,
     },
   };
 }
 
-class WirePlaceScene {
+class WirePlaceScene extends EventEmitter {
   _version: number;
   _actors: Record<string, Actor>;
   _updates: Record<string, Update>;
 
   constructor(isMaster: boolean = false) {
+    super();
     this._version = VERSION;
     this._actors = {};
     this._updates = {};
   }
 
+  onActorUpdate(
+    actorId: string,
+    callback: (update: Update, actor: Actor) => void
+  ) {
+    this.on(actorId, callback);
+  }
+
   addActor(actorId: string) {
     this.updateActor(actorId, {});
+  }
+
+  getActor(actorId: string): Actor | null {
+    return this._actors[actorId] || null;
   }
 
   forEach(callback: (actor: Actor) => void) {
@@ -85,10 +103,7 @@ class WirePlaceScene {
       obj = Object.assign(obj, u);
       this._actors[actorId] = obj;
       this._updates[actorId] = { ...obj };
-      return true;
-    }
-
-    if (u) {
+    } else if (u) {
       Object.assign(this._actors[actorId], u);
       const u_ = this._updates[actorId] || {};
       Object.assign(u_, u);
@@ -98,6 +113,8 @@ class WirePlaceScene {
       delete this._updates[actorId];
       this._updates[actorId] = false;
     }
+
+    this.emit(actorId, u, this.getActor(actorId));
     return true;
   }
 
@@ -122,7 +139,7 @@ class WirePlaceScene {
     return { count, data };
   }
 
-  applyDiff(data: string) {
+  applyDiff(data: string, skipId: string | null = null) {
     const diff: Diff = JSON.parse(data);
     if (diff.v !== this._version) {
       console.error('Invalid message version received:', diff.v);
@@ -131,6 +148,9 @@ class WirePlaceScene {
 
     const updates = diff.d;
     for (const actorId in updates) {
+      if (skipId && skipId === actorId) {
+        continue;
+      }
       const u = updates[actorId];
       this.updateActor(actorId, u);
     }
