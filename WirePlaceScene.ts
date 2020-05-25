@@ -3,6 +3,8 @@ import { EventEmitter } from 'events';
 // Serialization versioning
 const VERSION = 1;
 
+console.log('[Scene] Version:', VERSION);
+
 export type Vector3 = {
   x: number;
   y: number;
@@ -10,6 +12,8 @@ export type Vector3 = {
 };
 
 export type Actor = {
+  actorId: string;
+  deleted: boolean;
   speed: number;
   color: number;
   position: Vector3;
@@ -18,15 +22,17 @@ export type Actor = {
   up: Vector3;
 };
 
-export type Update = Partial<Actor> | false;
+export type Update = Partial<Actor>;
 
 export type Diff = {
   v: number;
   d: Record<string, Update>;
 };
 
-function createNewActor(): Actor {
+function createNewActor(actorId: string): Actor {
   return {
+    actorId,
+    deleted: false,
     speed: 1.4,
     color: 0,
     position: {
@@ -97,28 +103,35 @@ class WirePlaceScene extends EventEmitter {
   }
 
   removeActor(actorId: string): boolean {
-    return this.updateActor(actorId, false);
+    return this.updateActor(actorId, { deleted: true });
   }
 
   updateActor(actorId: string, u: Update): boolean {
-    if (!this.actorExists(actorId)) {
-      if (!u) {
-        return false;
-      }
+    const exists = this.actorExists(actorId);
 
-      let obj = createNewActor();
+    if (!exists && u.deleted) {
+      return false;
+    }
+
+    if (!exists) {
+      let obj = createNewActor(actorId);
       obj = Object.assign(obj, u);
       this._actors[actorId] = obj;
       this._updates[actorId] = { ...obj };
-    } else if (u) {
+
+      this.emit(actorId, u, this.getActor(actorId));
+      return true;
+    }
+
+    if (u.deleted) {
+      delete this._actors[actorId];
+      delete this._updates[actorId];
+      this._updates[actorId] = { deleted: true };
+    } else {
       Object.assign(this._actors[actorId], u);
       const u_ = this._updates[actorId] || {};
       Object.assign(u_, u);
       this._updates[actorId] = u_;
-    } else {
-      delete this._actors[actorId];
-      delete this._updates[actorId];
-      this._updates[actorId] = false;
     }
 
     this.emit(actorId, u, this.getActor(actorId));
