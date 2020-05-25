@@ -29,6 +29,8 @@ export type Diff = {
   d: Record<string, Update>;
 };
 
+export type WirePlaceSceneSerialized = string;
+
 function createNewActor(actorId: string): Actor {
   return {
     actorId,
@@ -56,6 +58,14 @@ function createNewActor(actorId: string): Actor {
       z: 0,
     },
   };
+}
+
+function serializeDiff(diff: Diff): WirePlaceSceneSerialized {
+  return JSON.stringify(diff);
+}
+
+function deserializeDiff(data: WirePlaceSceneSerialized): Diff {
+  return JSON.parse(data);
 }
 
 class WirePlaceScene extends EventEmitter {
@@ -154,13 +164,13 @@ class WirePlaceScene extends EventEmitter {
   ): { count: number; data: string } {
     const diff = this.retrieveDiff(getAll);
     const updates = diff.d;
-    const data = JSON.stringify(diff);
+    const data = serializeDiff(diff);
     const count = Object.keys(updates).length;
     return { count, data };
   }
 
-  applyDiff(data: string, skipId: string | null = null) {
-    const diff: Diff = JSON.parse(data);
+  applyDiff(data: WirePlaceSceneSerialized, skipId: string | null = null) {
+    const diff = deserializeDiff(data);
     if (diff.v !== this._version) {
       console.error('Invalid message version received:', diff.v);
       return;
