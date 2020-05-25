@@ -19,6 +19,7 @@ table Update {
   deleted: bool = false;
   speed: Float;
   color: UShort;
+  assetId: UShort;
   position: Vector3;
   rotation: Vector3;
   scale: Vector3;

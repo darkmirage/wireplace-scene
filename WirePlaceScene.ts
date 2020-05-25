@@ -18,6 +18,7 @@ export type Actor = {
   deleted: boolean;
   speed: number;
   color: number;
+  assetId: number;
   position: Vector3;
   rotation: Vector3;
   scale: Vector3;
@@ -39,6 +40,7 @@ function createNewActor(actorId: string): Actor {
     deleted: false,
     speed: 1.4,
     color: 0,
+    assetId: 0,
     position: {
       x: 0,
       y: 0,
@@ -75,6 +77,12 @@ export function serializeDiff(diff: Diff): WirePlaceSceneSerialized {
       WPFlatbuffers.Update.addColor(
         builder,
         WPFlatbuffers.UShort.createUShort(builder, u.color)
+      );
+    }
+    if (u.assetId !== undefined) {
+      WPFlatbuffers.Update.addAssetId(
+        builder,
+        WPFlatbuffers.UShort.createUShort(builder, u.assetId)
       );
     }
     if (u.speed !== undefined) {
@@ -155,6 +163,10 @@ export function deserializeDiff(data: WirePlaceSceneSerialized): Diff {
 
     if (uFB.color()) {
       u.color = uFB.color()?.value();
+    }
+
+    if (uFB.assetId()) {
+      u.assetId = uFB.assetId()?.value();
     }
 
     if (uFB.speed()) {

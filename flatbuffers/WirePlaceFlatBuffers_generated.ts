@@ -241,13 +241,13 @@ export namespace WPFlatbuffers {
     }
 
     /**
-     * @param WPFlatbuffers.Vector3= obj
-     * @returns WPFlatbuffers.Vector3|null
+     * @param WPFlatbuffers.UShort= obj
+     * @returns WPFlatbuffers.UShort|null
      */
-    position(obj?: WPFlatbuffers.Vector3): WPFlatbuffers.Vector3 | null {
+    assetId(obj?: WPFlatbuffers.UShort): WPFlatbuffers.UShort | null {
       var offset = this.bb!.__offset(this.bb_pos, 12);
       return offset
-        ? (obj || new WPFlatbuffers.Vector3()).__init(
+        ? (obj || new WPFlatbuffers.UShort()).__init(
             this.bb_pos + offset,
             this.bb!
           )
@@ -258,7 +258,7 @@ export namespace WPFlatbuffers {
      * @param WPFlatbuffers.Vector3= obj
      * @returns WPFlatbuffers.Vector3|null
      */
-    rotation(obj?: WPFlatbuffers.Vector3): WPFlatbuffers.Vector3 | null {
+    position(obj?: WPFlatbuffers.Vector3): WPFlatbuffers.Vector3 | null {
       var offset = this.bb!.__offset(this.bb_pos, 14);
       return offset
         ? (obj || new WPFlatbuffers.Vector3()).__init(
@@ -272,7 +272,7 @@ export namespace WPFlatbuffers {
      * @param WPFlatbuffers.Vector3= obj
      * @returns WPFlatbuffers.Vector3|null
      */
-    scale(obj?: WPFlatbuffers.Vector3): WPFlatbuffers.Vector3 | null {
+    rotation(obj?: WPFlatbuffers.Vector3): WPFlatbuffers.Vector3 | null {
       var offset = this.bb!.__offset(this.bb_pos, 16);
       return offset
         ? (obj || new WPFlatbuffers.Vector3()).__init(
@@ -286,8 +286,22 @@ export namespace WPFlatbuffers {
      * @param WPFlatbuffers.Vector3= obj
      * @returns WPFlatbuffers.Vector3|null
      */
-    up(obj?: WPFlatbuffers.Vector3): WPFlatbuffers.Vector3 | null {
+    scale(obj?: WPFlatbuffers.Vector3): WPFlatbuffers.Vector3 | null {
       var offset = this.bb!.__offset(this.bb_pos, 18);
+      return offset
+        ? (obj || new WPFlatbuffers.Vector3()).__init(
+            this.bb_pos + offset,
+            this.bb!
+          )
+        : null;
+    }
+
+    /**
+     * @param WPFlatbuffers.Vector3= obj
+     * @returns WPFlatbuffers.Vector3|null
+     */
+    up(obj?: WPFlatbuffers.Vector3): WPFlatbuffers.Vector3 | null {
+      var offset = this.bb!.__offset(this.bb_pos, 20);
       return offset
         ? (obj || new WPFlatbuffers.Vector3()).__init(
             this.bb_pos + offset,
@@ -300,7 +314,7 @@ export namespace WPFlatbuffers {
      * @param flatbuffers.Builder builder
      */
     static startUpdate(builder: flatbuffers.Builder) {
-      builder.startObject(8);
+      builder.startObject(9);
     }
 
     /**
@@ -346,13 +360,24 @@ export namespace WPFlatbuffers {
 
     /**
      * @param flatbuffers.Builder builder
+     * @param flatbuffers.Offset assetIdOffset
+     */
+    static addAssetId(
+      builder: flatbuffers.Builder,
+      assetIdOffset: flatbuffers.Offset
+    ) {
+      builder.addFieldStruct(4, assetIdOffset, 0);
+    }
+
+    /**
+     * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset positionOffset
      */
     static addPosition(
       builder: flatbuffers.Builder,
       positionOffset: flatbuffers.Offset
     ) {
-      builder.addFieldStruct(4, positionOffset, 0);
+      builder.addFieldStruct(5, positionOffset, 0);
     }
 
     /**
@@ -363,7 +388,7 @@ export namespace WPFlatbuffers {
       builder: flatbuffers.Builder,
       rotationOffset: flatbuffers.Offset
     ) {
-      builder.addFieldStruct(5, rotationOffset, 0);
+      builder.addFieldStruct(6, rotationOffset, 0);
     }
 
     /**
@@ -374,7 +399,7 @@ export namespace WPFlatbuffers {
       builder: flatbuffers.Builder,
       scaleOffset: flatbuffers.Offset
     ) {
-      builder.addFieldStruct(6, scaleOffset, 0);
+      builder.addFieldStruct(7, scaleOffset, 0);
     }
 
     /**
@@ -382,7 +407,7 @@ export namespace WPFlatbuffers {
      * @param flatbuffers.Offset upOffset
      */
     static addUp(builder: flatbuffers.Builder, upOffset: flatbuffers.Offset) {
-      builder.addFieldStruct(7, upOffset, 0);
+      builder.addFieldStruct(8, upOffset, 0);
     }
 
     /**
@@ -400,6 +425,7 @@ export namespace WPFlatbuffers {
       deleted: boolean,
       speedOffset: flatbuffers.Offset,
       colorOffset: flatbuffers.Offset,
+      assetIdOffset: flatbuffers.Offset,
       positionOffset: flatbuffers.Offset,
       rotationOffset: flatbuffers.Offset,
       scaleOffset: flatbuffers.Offset,
@@ -410,6 +436,7 @@ export namespace WPFlatbuffers {
       Update.addDeleted(builder, deleted);
       Update.addSpeed(builder, speedOffset);
       Update.addColor(builder, colorOffset);
+      Update.addAssetId(builder, assetIdOffset);
       Update.addPosition(builder, positionOffset);
       Update.addRotation(builder, rotationOffset);
       Update.addScale(builder, scaleOffset);
