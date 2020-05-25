@@ -1,0 +1,25 @@
+namespace WPFlatbuffers;
+
+struct Vector3 {
+  x: float = 0;
+  y: float = 0;
+  z: float = 0;
+}
+
+table Update {
+  actorId: string;
+  deleted: bool = false;
+  speed: float = 1.4;
+  color: short;
+  position: Vector3;
+  rotation: Vector3;
+  scale: Vector3;
+  up: Vector3;
+}
+
+table Diff {
+  version: short;
+  updates: [Update];
+}
+
+root_type Diff;

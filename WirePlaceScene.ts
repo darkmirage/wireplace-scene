@@ -1,4 +1,6 @@
 import { EventEmitter } from 'events';
+import { flatbuffers } from 'flatbuffers';
+import { WPFlatbuffers } from './flatbuffers/WirePlaceFlatBuffers_generated';
 
 // Serialization versioning
 const VERSION = 1;
@@ -29,7 +31,7 @@ export type Diff = {
   d: Record<string, Update>;
 };
 
-export type WirePlaceSceneSerialized = string;
+export type WirePlaceSceneSerialized = Uint8Array;
 
 function createNewActor(actorId: string): Actor {
   return {
@@ -60,12 +62,120 @@ function createNewActor(actorId: string): Actor {
   };
 }
 
-function serializeDiff(diff: Diff): WirePlaceSceneSerialized {
-  return JSON.stringify(diff);
+export function serializeDiff(diff: Diff): WirePlaceSceneSerialized {
+  const builder = new flatbuffers.Builder();
+
+  const uFBs = Object.keys(diff.d).map((actorId) => {
+    const u = diff.d[actorId];
+    const idFB = builder.createString(actorId);
+
+    WPFlatbuffers.Update.startUpdate(builder);
+    WPFlatbuffers.Update.addActorId(builder, idFB);
+    if (u.color !== undefined) {
+      WPFlatbuffers.Update.addColor(builder, u.color);
+    }
+    if (u.speed !== undefined) {
+      WPFlatbuffers.Update.addSpeed(builder, u.speed);
+    }
+    if (u.deleted) {
+      WPFlatbuffers.Update.addDeleted(builder, true);
+    }
+    if (u.position !== undefined) {
+      const { x, y, z } = u.position;
+      WPFlatbuffers.Update.addPosition(
+        builder,
+        WPFlatbuffers.Vector3.createVector3(builder, x, y, z)
+      );
+    }
+    if (u.rotation !== undefined) {
+      const { x, y, z } = u.rotation;
+      WPFlatbuffers.Update.addRotation(
+        builder,
+        WPFlatbuffers.Vector3.createVector3(builder, x, y, z)
+      );
+    }
+    if (u.scale !== undefined) {
+      const { x, y, z } = u.scale;
+      WPFlatbuffers.Update.addScale(
+        builder,
+        WPFlatbuffers.Vector3.createVector3(builder, x, y, z)
+      );
+    }
+    if (u.up !== undefined) {
+      const { x, y, z } = u.up;
+      WPFlatbuffers.Update.addUp(
+        builder,
+        WPFlatbuffers.Vector3.createVector3(builder, x, y, z)
+      );
+    }
+    const uFB = WPFlatbuffers.Update.endUpdate(builder);
+    return uFB;
+  });
+
+  const updatesFB = WPFlatbuffers.Diff.createUpdatesVector(builder, uFBs);
+
+  WPFlatbuffers.Diff.startDiff(builder);
+  WPFlatbuffers.Diff.addVersion(builder, diff.v);
+  WPFlatbuffers.Diff.addUpdates(builder, updatesFB);
+  const diffFB = WPFlatbuffers.Diff.endDiff(builder);
+  WPFlatbuffers.Diff.finishDiffBuffer(builder, diffFB);
+
+  return builder.asUint8Array();
 }
 
-function deserializeDiff(data: WirePlaceSceneSerialized): Diff {
-  return JSON.parse(data);
+export function deserializeDiff(data: WirePlaceSceneSerialized): Diff {
+  const buf = new flatbuffers.ByteBuffer(data);
+  const diffFB = WPFlatbuffers.Diff.getRootAsDiff(buf);
+  const diff: Diff = { v: diffFB.version(), d: {} };
+
+  for (let i = 0; i < diffFB.updatesLength(); i += 1) {
+    const uFB = diffFB.updates(i);
+    if (!uFB) {
+      continue;
+    }
+
+    const actorId = uFB.actorId();
+    if (!actorId) {
+      continue;
+    }
+
+    const u: Update = { actorId };
+    if (uFB.deleted()) {
+      u.deleted = true;
+    }
+
+    if (!isNaN(uFB.color())) {
+      u.color = uFB.color();
+    }
+
+    if (!isNaN(uFB.speed())) {
+      u.speed = uFB.speed();
+    }
+
+    let v = uFB.position();
+    if (v) {
+      u.position = { x: v.x(), y: v.y(), z: v.z() };
+    }
+
+    v = uFB.rotation();
+    if (v) {
+      u.rotation = { x: v.x(), y: v.y(), z: v.z() };
+    }
+
+    v = uFB.scale();
+    if (v) {
+      u.scale = { x: v.x(), y: v.y(), z: v.z() };
+    }
+
+    v = uFB.up();
+    if (v) {
+      u.up = { x: v.x(), y: v.y(), z: v.z() };
+    }
+
+    diff.d[actorId] = u;
+  }
+
+  return diff;
 }
 
 class WirePlaceScene extends EventEmitter {
@@ -161,7 +271,7 @@ class WirePlaceScene extends EventEmitter {
 
   retrieveSerializedDiff(
     getAll: boolean = false
-  ): { count: number; data: string } {
+  ): { count: number; data: WirePlaceSceneSerialized } {
     const diff = this.retrieveDiff(getAll);
     const updates = diff.d;
     const data = serializeDiff(diff);
@@ -169,8 +279,7 @@ class WirePlaceScene extends EventEmitter {
     return { count, data };
   }
 
-  applyDiff(data: WirePlaceSceneSerialized, skipId: string | null = null) {
-    const diff = deserializeDiff(data);
+  applyDiff(diff: Diff, skipId: string | null = null) {
     if (diff.v !== this._version) {
       console.error('Invalid message version received:', diff.v);
       return;
@@ -184,6 +293,14 @@ class WirePlaceScene extends EventEmitter {
       const u = updates[actorId];
       this.updateActor(actorId, u);
     }
+  }
+
+  applySerializedDiff(
+    data: WirePlaceSceneSerialized,
+    skipId: string | null = null
+  ) {
+    const diff = deserializeDiff(data);
+    return this.applyDiff(diff, skipId);
   }
 }
 
