@@ -6,11 +6,19 @@ struct Vector3 {
   z: float = 0;
 }
 
+struct Float {
+  value: float;
+}
+
+struct UShort {
+  value: ushort;
+}
+
 table Update {
   actorId: string;
   deleted: bool = false;
-  speed: float;
-  color: ushort;
+  speed: Float;
+  color: UShort;
   position: Vector3;
   rotation: Vector3;
   scale: Vector3;
@@ -18,7 +26,7 @@ table Update {
 }
 
 table Diff {
-  version: ushort;
+  version: UShort;
   updates: [Update];
 }
 

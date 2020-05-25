@@ -66,6 +66,88 @@ export namespace WPFlatbuffers {
  * @constructor
  */
 export namespace WPFlatbuffers {
+  export class Float {
+    bb: flatbuffers.ByteBuffer | null = null;
+
+    bb_pos: number = 0;
+    /**
+     * @param number i
+     * @param flatbuffers.ByteBuffer bb
+     * @returns Float
+     */
+    __init(i: number, bb: flatbuffers.ByteBuffer): Float {
+      this.bb_pos = i;
+      this.bb = bb;
+      return this;
+    }
+
+    /**
+     * @returns number
+     */
+    value(): number {
+      return this.bb!.readFloat32(this.bb_pos);
+    }
+
+    /**
+     * @param flatbuffers.Builder builder
+     * @param number value
+     * @returns flatbuffers.Offset
+     */
+    static createFloat(
+      builder: flatbuffers.Builder,
+      value: number
+    ): flatbuffers.Offset {
+      builder.prep(4, 4);
+      builder.writeFloat32(value);
+      return builder.offset();
+    }
+  }
+}
+/**
+ * @constructor
+ */
+export namespace WPFlatbuffers {
+  export class UShort {
+    bb: flatbuffers.ByteBuffer | null = null;
+
+    bb_pos: number = 0;
+    /**
+     * @param number i
+     * @param flatbuffers.ByteBuffer bb
+     * @returns UShort
+     */
+    __init(i: number, bb: flatbuffers.ByteBuffer): UShort {
+      this.bb_pos = i;
+      this.bb = bb;
+      return this;
+    }
+
+    /**
+     * @returns number
+     */
+    value(): number {
+      return this.bb!.readUint16(this.bb_pos);
+    }
+
+    /**
+     * @param flatbuffers.Builder builder
+     * @param number value
+     * @returns flatbuffers.Offset
+     */
+    static createUShort(
+      builder: flatbuffers.Builder,
+      value: number
+    ): flatbuffers.Offset {
+      builder.prep(2, 2);
+      builder.writeInt16(value);
+      return builder.offset();
+    }
+  }
+}
+/**
+ * @constructor
+ */
+export namespace WPFlatbuffers {
   export class Update {
     bb: flatbuffers.ByteBuffer | null = null;
 
@@ -131,19 +213,31 @@ export namespace WPFlatbuffers {
     }
 
     /**
-     * @returns number
+     * @param WPFlatbuffers.Float= obj
+     * @returns WPFlatbuffers.Float|null
      */
-    speed(): number {
+    speed(obj?: WPFlatbuffers.Float): WPFlatbuffers.Float | null {
       var offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.0;
+      return offset
+        ? (obj || new WPFlatbuffers.Float()).__init(
+            this.bb_pos + offset,
+            this.bb!
+          )
+        : null;
     }
 
     /**
-     * @returns number
+     * @param WPFlatbuffers.UShort= obj
+     * @returns WPFlatbuffers.UShort|null
      */
-    color(): number {
+    color(obj?: WPFlatbuffers.UShort): WPFlatbuffers.UShort | null {
       var offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0;
+      return offset
+        ? (obj || new WPFlatbuffers.UShort()).__init(
+            this.bb_pos + offset,
+            this.bb!
+          )
+        : null;
     }
 
     /**
@@ -230,18 +324,24 @@ export namespace WPFlatbuffers {
 
     /**
      * @param flatbuffers.Builder builder
-     * @param number speed
+     * @param flatbuffers.Offset speedOffset
      */
-    static addSpeed(builder: flatbuffers.Builder, speed: number) {
-      builder.addFieldFloat32(2, speed, 0.0);
+    static addSpeed(
+      builder: flatbuffers.Builder,
+      speedOffset: flatbuffers.Offset
+    ) {
+      builder.addFieldStruct(2, speedOffset, 0);
     }
 
     /**
      * @param flatbuffers.Builder builder
-     * @param number color
+     * @param flatbuffers.Offset colorOffset
      */
-    static addColor(builder: flatbuffers.Builder, color: number) {
-      builder.addFieldInt16(3, color, 0);
+    static addColor(
+      builder: flatbuffers.Builder,
+      colorOffset: flatbuffers.Offset
+    ) {
+      builder.addFieldStruct(3, colorOffset, 0);
     }
 
     /**
@@ -298,8 +398,8 @@ export namespace WPFlatbuffers {
       builder: flatbuffers.Builder,
       actorIdOffset: flatbuffers.Offset,
       deleted: boolean,
-      speed: number,
-      color: number,
+      speedOffset: flatbuffers.Offset,
+      colorOffset: flatbuffers.Offset,
       positionOffset: flatbuffers.Offset,
       rotationOffset: flatbuffers.Offset,
       scaleOffset: flatbuffers.Offset,
@@ -308,8 +408,8 @@ export namespace WPFlatbuffers {
       Update.startUpdate(builder);
       Update.addActorId(builder, actorIdOffset);
       Update.addDeleted(builder, deleted);
-      Update.addSpeed(builder, speed);
-      Update.addColor(builder, color);
+      Update.addSpeed(builder, speedOffset);
+      Update.addColor(builder, colorOffset);
       Update.addPosition(builder, positionOffset);
       Update.addRotation(builder, rotationOffset);
       Update.addScale(builder, scaleOffset);
@@ -366,11 +466,17 @@ export namespace WPFlatbuffers {
     }
 
     /**
-     * @returns number
+     * @param WPFlatbuffers.UShort= obj
+     * @returns WPFlatbuffers.UShort|null
      */
-    version(): number {
+    version(obj?: WPFlatbuffers.UShort): WPFlatbuffers.UShort | null {
       var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0;
+      return offset
+        ? (obj || new WPFlatbuffers.UShort()).__init(
+            this.bb_pos + offset,
+            this.bb!
+          )
+        : null;
     }
 
     /**
@@ -410,10 +516,13 @@ export namespace WPFlatbuffers {
 
     /**
      * @param flatbuffers.Builder builder
-     * @param number version
+     * @param flatbuffers.Offset versionOffset
      */
-    static addVersion(builder: flatbuffers.Builder, version: number) {
-      builder.addFieldInt16(0, version, 0);
+    static addVersion(
+      builder: flatbuffers.Builder,
+      versionOffset: flatbuffers.Offset
+    ) {
+      builder.addFieldStruct(0, versionOffset, 0);
     }
 
     /**
@@ -484,11 +593,11 @@ export namespace WPFlatbuffers {
 
     static createDiff(
       builder: flatbuffers.Builder,
-      version: number,
+      versionOffset: flatbuffers.Offset,
       updatesOffset: flatbuffers.Offset
     ): flatbuffers.Offset {
       Diff.startDiff(builder);
-      Diff.addVersion(builder, version);
+      Diff.addVersion(builder, versionOffset);
       Diff.addUpdates(builder, updatesOffset);
       return Diff.endDiff(builder);
     }

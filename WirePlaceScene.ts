@@ -72,10 +72,16 @@ export function serializeDiff(diff: Diff): WirePlaceSceneSerialized {
     WPFlatbuffers.Update.startUpdate(builder);
     WPFlatbuffers.Update.addActorId(builder, idFB);
     if (u.color !== undefined) {
-      WPFlatbuffers.Update.addColor(builder, u.color);
+      WPFlatbuffers.Update.addColor(
+        builder,
+        WPFlatbuffers.UShort.createUShort(builder, u.color)
+      );
     }
     if (u.speed !== undefined) {
-      WPFlatbuffers.Update.addSpeed(builder, u.speed);
+      WPFlatbuffers.Update.addSpeed(
+        builder,
+        WPFlatbuffers.Float.createFloat(builder, u.speed)
+      );
     }
     if (u.deleted) {
       WPFlatbuffers.Update.addDeleted(builder, true);
@@ -115,7 +121,10 @@ export function serializeDiff(diff: Diff): WirePlaceSceneSerialized {
   const updatesFB = WPFlatbuffers.Diff.createUpdatesVector(builder, uFBs);
 
   WPFlatbuffers.Diff.startDiff(builder);
-  WPFlatbuffers.Diff.addVersion(builder, diff.v);
+  WPFlatbuffers.Diff.addVersion(
+    builder,
+    WPFlatbuffers.UShort.createUShort(builder, diff.v)
+  );
   WPFlatbuffers.Diff.addUpdates(builder, updatesFB);
   const diffFB = WPFlatbuffers.Diff.endDiff(builder);
   WPFlatbuffers.Diff.finishDiffBuffer(builder, diffFB);
@@ -126,7 +135,7 @@ export function serializeDiff(diff: Diff): WirePlaceSceneSerialized {
 export function deserializeDiff(data: WirePlaceSceneSerialized): Diff {
   const buf = new flatbuffers.ByteBuffer(data);
   const diffFB = WPFlatbuffers.Diff.getRootAsDiff(buf);
-  const diff: Diff = { v: diffFB.version(), d: {} };
+  const diff: Diff = { v: diffFB.version()?.value() || 0, d: {} };
 
   for (let i = 0; i < diffFB.updatesLength(); i += 1) {
     const uFB = diffFB.updates(i);
@@ -144,12 +153,12 @@ export function deserializeDiff(data: WirePlaceSceneSerialized): Diff {
       u.deleted = true;
     }
 
-    if (!isNaN(uFB.color())) {
-      u.color = uFB.color();
+    if (uFB.color()) {
+      u.color = uFB.color()?.value();
     }
 
-    if (!isNaN(uFB.speed())) {
-      u.speed = uFB.speed();
+    if (uFB.speed()) {
+      u.speed = uFB.speed()?.value();
     }
 
     let v = uFB.position();
@@ -226,7 +235,11 @@ class WirePlaceScene extends EventEmitter {
     return this.updateActor(actorId, { deleted: true });
   }
 
-  updateActor(actorId: string, u: Update, invokeCallbacks: boolean = false): boolean {
+  updateActor(
+    actorId: string,
+    u: Update,
+    invokeCallbacks: boolean = false
+  ): boolean {
     const exists = this.actorExists(actorId);
 
     if (!exists && u.deleted) {
