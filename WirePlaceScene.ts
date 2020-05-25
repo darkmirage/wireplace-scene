@@ -3,7 +3,7 @@ import { flatbuffers } from 'flatbuffers';
 import { WPFlatbuffers } from './flatbuffers/WirePlaceFlatBuffers_generated';
 
 // Serialization versioning
-const VERSION = 1;
+const VERSION = 2;
 
 console.log('[Scene] Version:', VERSION);
 
