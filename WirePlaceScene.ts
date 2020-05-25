@@ -226,7 +226,7 @@ class WirePlaceScene extends EventEmitter {
     return this.updateActor(actorId, { deleted: true });
   }
 
-  updateActor(actorId: string, u: Update): boolean {
+  updateActor(actorId: string, u: Update, invokeCallbacks: boolean = false): boolean {
     const exists = this.actorExists(actorId);
 
     if (!exists && u.deleted) {
@@ -239,7 +239,9 @@ class WirePlaceScene extends EventEmitter {
       this._actors[actorId] = obj;
       this._updates[actorId] = { ...obj };
 
-      this.emit(actorId, u, this.getActor(actorId));
+      if (invokeCallbacks) {
+        this.emit(actorId, u, this.getActor(actorId));
+      }
       return true;
     }
 
@@ -254,7 +256,9 @@ class WirePlaceScene extends EventEmitter {
       this._updates[actorId] = u_;
     }
 
-    this.emit(actorId, u, this.getActor(actorId));
+    if (invokeCallbacks) {
+      this.emit(actorId, u, this.getActor(actorId));
+    }
     return true;
   }
 
