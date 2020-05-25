@@ -9,8 +9,8 @@ struct Vector3 {
 table Update {
   actorId: string;
   deleted: bool = false;
-  speed: float = 1.4;
-  color: short;
+  speed: float;
+  color: ushort;
   position: Vector3;
   rotation: Vector3;
   scale: Vector3;
@@ -18,7 +18,7 @@ table Update {
 }
 
 table Diff {
-  version: short;
+  version: ushort;
   updates: [Update];
 }
 

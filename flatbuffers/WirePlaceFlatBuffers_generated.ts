@@ -135,7 +135,7 @@ export namespace WPFlatbuffers {
      */
     speed(): number {
       var offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 1.4;
+      return offset ? this.bb!.readFloat32(this.bb_pos + offset) : 0.0;
     }
 
     /**
@@ -143,7 +143,7 @@ export namespace WPFlatbuffers {
      */
     color(): number {
       var offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset ? this.bb!.readInt16(this.bb_pos + offset) : 0;
+      return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0;
     }
 
     /**
@@ -233,7 +233,7 @@ export namespace WPFlatbuffers {
      * @param number speed
      */
     static addSpeed(builder: flatbuffers.Builder, speed: number) {
-      builder.addFieldFloat32(2, speed, 1.4);
+      builder.addFieldFloat32(2, speed, 0.0);
     }
 
     /**
@@ -370,7 +370,7 @@ export namespace WPFlatbuffers {
      */
     version(): number {
       var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset ? this.bb!.readInt16(this.bb_pos + offset) : 0;
+      return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0;
     }
 
     /**
