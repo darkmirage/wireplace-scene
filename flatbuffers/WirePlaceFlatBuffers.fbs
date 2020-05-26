@@ -1,9 +1,9 @@
 namespace WPFlatbuffers;
 
 struct Vector3 {
-  x: float = 0;
-  y: float = 0;
-  z: float = 0;
+  x: float;
+  y: float;
+  z: float;
 }
 
 struct Float {
@@ -14,15 +14,21 @@ struct UShort {
   value: ushort;
 }
 
+struct NetworkedAnimationAction{
+  type: ushort;
+  state: short;
+}
+
 table Update {
+  action: NetworkedAnimationAction;
   actorId: string;
-  deleted: bool = false;
-  speed: Float;
-  color: UShort;
   assetId: UShort;
+  color: UShort;
+  deleted: bool = false;
   position: Vector3;
   rotation: Vector3;
   scale: Vector3;
+  speed: Float;
   up: Vector3;
 }
 

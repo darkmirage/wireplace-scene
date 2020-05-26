@@ -3,7 +3,7 @@ import { flatbuffers } from 'flatbuffers';
 import { WPFlatbuffers } from './flatbuffers/WirePlaceFlatBuffers_generated';
 
 // Serialization versioning
-const VERSION = 2;
+const VERSION = 3;
 
 console.log('[Scene] Version:', VERSION);
 
@@ -13,15 +13,21 @@ export type Vector3 = {
   z: number;
 };
 
+type NetworkedAnimationAction = {
+  type: number;
+  state: number;
+};
+
 export type Actor = {
+  action: NetworkedAnimationAction;
   actorId: string;
-  deleted: boolean;
-  speed: number;
-  color: number;
   assetId: number;
+  color: number;
+  deleted: boolean;
   position: Vector3;
   rotation: Vector3;
   scale: Vector3;
+  speed: number;
   up: Vector3;
 };
 
@@ -38,6 +44,10 @@ function createNewActor(actorId: string): Actor {
   return {
     actorId,
     deleted: false,
+    action: {
+      type: 0,
+      state: -1,
+    },
     speed: 1.4,
     color: 0,
     assetId: 0,
@@ -93,6 +103,16 @@ export function serializeDiff(diff: Diff): WirePlaceSceneSerialized {
     }
     if (u.deleted) {
       WPFlatbuffers.Update.addDeleted(builder, true);
+    }
+    if (u.action) {
+      WPFlatbuffers.Update.addAction(
+        builder,
+        WPFlatbuffers.NetworkedAnimationAction.createNetworkedAnimationAction(
+          builder,
+          u.action.type,
+          u.action.state
+        )
+      );
     }
     if (u.position !== undefined) {
       const { x, y, z } = u.position;
@@ -171,6 +191,14 @@ export function deserializeDiff(data: WirePlaceSceneSerialized): Diff {
 
     if (uFB.speed()) {
       u.speed = uFB.speed()?.value();
+    }
+
+    const action = uFB.action();
+    if (action) {
+      u.action = {
+        type: action.type(),
+        state: action.state(),
+      };
     }
 
     let v = uFB.position();
