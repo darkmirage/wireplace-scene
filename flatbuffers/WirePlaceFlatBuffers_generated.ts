@@ -148,6 +148,47 @@ export namespace WPFlatbuffers {
  * @constructor
  */
 export namespace WPFlatbuffers {
+  export class UInt {
+    bb: flatbuffers.ByteBuffer | null = null;
+
+    bb_pos: number = 0;
+    /**
+     * @param number i
+     * @param flatbuffers.ByteBuffer bb
+     * @returns UInt
+     */
+    __init(i: number, bb: flatbuffers.ByteBuffer): UInt {
+      this.bb_pos = i;
+      this.bb = bb;
+      return this;
+    }
+
+    /**
+     * @returns number
+     */
+    value(): number {
+      return this.bb!.readUint32(this.bb_pos);
+    }
+
+    /**
+     * @param flatbuffers.Builder builder
+     * @param number value
+     * @returns flatbuffers.Offset
+     */
+    static createUInt(
+      builder: flatbuffers.Builder,
+      value: number
+    ): flatbuffers.Offset {
+      builder.prep(4, 4);
+      builder.writeInt32(value);
+      return builder.offset();
+    }
+  }
+}
+/**
+ * @constructor
+ */
+export namespace WPFlatbuffers {
   export class NetworkedAnimationAction {
     bb: flatbuffers.ByteBuffer | null = null;
 
@@ -286,13 +327,13 @@ export namespace WPFlatbuffers {
     }
 
     /**
-     * @param WPFlatbuffers.UShort= obj
-     * @returns WPFlatbuffers.UShort|null
+     * @param WPFlatbuffers.UInt= obj
+     * @returns WPFlatbuffers.UInt|null
      */
-    color(obj?: WPFlatbuffers.UShort): WPFlatbuffers.UShort | null {
+    color(obj?: WPFlatbuffers.UInt): WPFlatbuffers.UInt | null {
       var offset = this.bb!.__offset(this.bb_pos, 10);
       return offset
-        ? (obj || new WPFlatbuffers.UShort()).__init(
+        ? (obj || new WPFlatbuffers.UInt()).__init(
             this.bb_pos + offset,
             this.bb!
           )

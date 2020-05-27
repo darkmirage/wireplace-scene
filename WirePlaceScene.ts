@@ -3,7 +3,7 @@ import { flatbuffers } from 'flatbuffers';
 import { WPFlatbuffers } from './flatbuffers/WirePlaceFlatBuffers_generated';
 
 // Serialization versioning
-const VERSION = 3;
+const VERSION = 4;
 
 console.log('[Scene] Version:', VERSION);
 
@@ -86,7 +86,7 @@ export function serializeDiff(diff: Diff): WirePlaceSceneSerialized {
     if (u.color !== undefined) {
       WPFlatbuffers.Update.addColor(
         builder,
-        WPFlatbuffers.UShort.createUShort(builder, u.color)
+        WPFlatbuffers.UInt.createUInt(builder, u.color)
       );
     }
     if (u.assetId !== undefined) {
