@@ -7,6 +7,8 @@ const VERSION = 4;
 
 console.log('[Scene] Version:', VERSION);
 
+export type ActorID = string;
+
 export type Vector3 = {
   x: number;
   y: number;
@@ -20,7 +22,7 @@ type NetworkedAnimationAction = {
 
 export type Actor = {
   action: NetworkedAnimationAction;
-  actorId: string;
+  actorId: ActorID;
   assetId: number;
   color: number;
   deleted: boolean;
@@ -35,12 +37,12 @@ export type Update = Partial<Actor>;
 
 export type Diff = {
   v: number;
-  d: Record<string, Update>;
+  d: Record<ActorID, Update>;
 };
 
 export type WirePlaceSceneSerialized = Uint8Array;
 
-function createNewActor(actorId: string): Actor {
+function createNewActor(actorId: ActorID): Actor {
   return {
     actorId,
     deleted: false,
@@ -229,8 +231,8 @@ export function deserializeDiff(data: WirePlaceSceneSerialized): Diff {
 
 class WirePlaceScene extends EventEmitter {
   _version: number;
-  _actors: Record<string, Actor>;
-  _updates: Record<string, Update>;
+  _actors: Record<ActorID, Actor>;
+  _updates: Record<ActorID, Update>;
 
   constructor(isMaster: boolean = false) {
     super();
@@ -244,7 +246,7 @@ class WirePlaceScene extends EventEmitter {
   }
 
   onActorUpdate(
-    actorId: string,
+    actorId: ActorID,
     callback: (update: Update, actor: Actor) => void
   ): () => void {
     this.on(actorId, callback);
@@ -253,30 +255,30 @@ class WirePlaceScene extends EventEmitter {
     };
   }
 
-  addActor(actorId: string) {
+  addActor(actorId: ActorID) {
     this.updateActor(actorId, {});
   }
 
-  getActor(actorId: string): Actor | null {
+  getActor(actorId: ActorID): Actor | null {
     return this._actors[actorId] || null;
   }
 
-  forEach(callback: (actor: Actor, actorId: string) => void) {
+  forEach(callback: (actor: Actor, actorId: ActorID) => void) {
     for (const actorId in this._actors) {
       callback(this._actors[actorId], actorId);
     }
   }
 
-  actorExists(actorId: string): boolean {
+  actorExists(actorId: ActorID): boolean {
     return actorId in this._actors;
   }
 
-  removeActor(actorId: string): boolean {
+  removeActor(actorId: ActorID): boolean {
     return this.updateActor(actorId, { deleted: true });
   }
 
   updateActor(
-    actorId: string,
+    actorId: ActorID,
     u: Update,
     invokeCallbacks: boolean = false
   ): boolean {

@@ -5,6 +5,7 @@ import WirePlaceScene, {
 
 export type {
   Actor,
+  ActorID,
   Update,
   Diff,
   WirePlaceSceneSerialized,
