@@ -3,7 +3,7 @@ import { flatbuffers } from 'flatbuffers';
 import { WPFlatbuffers } from './flatbuffers/WirePlaceFlatBuffers_generated';
 
 // Serialization versioning
-const VERSION = 4;
+const VERSION = 5;
 
 console.log('[Scene] Version:', VERSION);
 
@@ -261,6 +261,14 @@ class WirePlaceScene extends EventEmitter {
 
   getActor(actorId: ActorID): Actor | null {
     return this._actors[actorId] || null;
+  }
+
+  getActorOrThrow(actorId: ActorID): Actor {
+    const actor = this.getActor(actorId);
+    if (actor) {
+      return actor;
+    }
+    throw new Error(`Invalid actorId: ${actorId}`);
   }
 
   forEach(callback: (actor: Actor, actorId: ActorID) => void) {
