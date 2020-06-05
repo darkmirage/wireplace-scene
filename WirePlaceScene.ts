@@ -12,12 +12,34 @@ import { createNewActor, serializeDiff, deserializeDiff } from './utils';
 // Serialization versioning
 const VERSION = 5;
 
-class WirePlaceScene extends EventEmitter {
+export interface IScene<T> {
+  version: number;
+
+  addActor(actorId: ActorID): void;
+  clear(): void;
+  getActor(actorId: ActorID): Actor | null;
+  getActorOrThrow(actorId: ActorID): Actor;
+  removeActor(actorId: ActorID): boolean;
+  updateActor(actorId: ActorID, u: Update, invokeCallbacks?: boolean): boolean;
+
+  onActorUpdate(
+    actorId: ActorID,
+    callback: (update: Update, actor: Actor) => void
+  ): () => void;
+
+  applyDiff(diff: Diff): void;
+  applySerializedDiff(data: T): void;
+  retrieveDiff(getAll?: boolean): Diff;
+  retrieveSerializedDiff(getAll: boolean): { count: number; data: T };
+}
+
+class WirePlaceScene extends EventEmitter
+  implements IScene<WirePlaceSceneSerialized> {
   version: number;
   _actors: Record<ActorID, Actor>;
   _updates: Record<ActorID, Update>;
 
-  constructor(isMaster: boolean = false) {
+  constructor() {
     super();
     this.version = VERSION;
     this._actors = {};
@@ -129,7 +151,7 @@ class WirePlaceScene extends EventEmitter {
     return { count, data };
   }
 
-  applyDiff(diff: Diff, skipId: string | null = null) {
+  applyDiff(diff: Diff) {
     if (diff.v !== this.version) {
       console.error('Invalid message version received:', diff.v);
       return;
@@ -137,20 +159,14 @@ class WirePlaceScene extends EventEmitter {
 
     const updates = diff.d;
     for (const actorId in updates) {
-      if (skipId && skipId === actorId) {
-        continue;
-      }
       const u = updates[actorId];
       this.updateActor(actorId, u);
     }
   }
 
-  applySerializedDiff(
-    data: WirePlaceSceneSerialized,
-    skipId: string | null = null
-  ) {
+  applySerializedDiff(data: WirePlaceSceneSerialized) {
     const diff = deserializeDiff(data);
-    return this.applyDiff(diff, skipId);
+    return this.applyDiff(diff);
   }
 }
 
