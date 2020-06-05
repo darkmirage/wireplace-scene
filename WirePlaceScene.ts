@@ -17,6 +17,9 @@ import {
 // Serialization versioning
 const VERSION = 6;
 
+const REV_BUFFER = 200;
+const MAX_REV = 2000;
+
 export interface IScene<T> {
   version: number;
 
@@ -99,10 +102,6 @@ class WirePlaceScene extends EventEmitter
     }
   }
 
-  actorExists(actorId: ActorID): boolean {
-    return actorId in this._actors;
-  }
-
   removeActor(actorId: ActorID): boolean {
     return this.updateActor(actorId, { deleted: true });
   }
@@ -112,13 +111,13 @@ class WirePlaceScene extends EventEmitter
     u: Update,
     invokeCallbacks: boolean = false
   ): boolean {
-    const exists = this.actorExists(actorId);
+    const actor = this.getActor(actorId);
 
-    if (!exists && u.deleted) {
+    if (!actor && u.deleted) {
       return false;
     }
 
-    if (!exists) {
+    if (!actor) {
       let obj = createNewActor(actorId);
       obj = Object.assign(obj, u);
       this._actors[actorId] = obj;
@@ -130,12 +129,27 @@ class WirePlaceScene extends EventEmitter
       return true;
     }
 
+    let currentRev = actor.revision;
+    let newRev = u.revision;
+
+    if (newRev !== undefined) {
+      if (currentRev >= MAX_REV - REV_BUFFER && newRev < REV_BUFFER) {
+        currentRev = 0;
+      }
+
+      if (currentRev >= newRev) {
+        return false;
+      }
+    } else {
+      u.revision = (currentRev + 1) % MAX_REV;
+    }
+
     if (u.deleted) {
       delete this._actors[actorId];
       delete this._updates[actorId];
       this._updates[actorId] = { deleted: true };
     } else {
-      Object.assign(this._actors[actorId], u);
+      Object.assign(actor, u);
       const u_ = this._updates[actorId] || {};
       Object.assign(u_, u);
       this._updates[actorId] = u_;
