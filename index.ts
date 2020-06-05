@@ -1,14 +1,13 @@
-import WirePlaceScene, {
-  serializeDiff,
-  deserializeDiff,
-} from './WirePlaceScene';
+import WirePlaceScene from './WirePlaceScene';
 
-export type {
+export { serializeDiff, deserializeDiff } from './utils';
+
+export {
   Actor,
   ActorID,
-  Update,
   Diff,
+  Update,
   WirePlaceSceneSerialized,
-} from './WirePlaceScene';
+} from './types';
 
-export { WirePlaceScene, deserializeDiff, serializeDiff };
+export { WirePlaceScene };

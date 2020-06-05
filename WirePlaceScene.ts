@@ -1,242 +1,25 @@
 import { EventEmitter } from 'events';
-import { flatbuffers } from 'flatbuffers';
-import { WPFlatbuffers } from './flatbuffers/WirePlaceFlatBuffers_generated';
+
+import {
+  Actor,
+  ActorID,
+  Diff,
+  Update,
+  WirePlaceSceneSerialized,
+} from './types';
+import { createNewActor, serializeDiff, deserializeDiff } from './utils';
 
 // Serialization versioning
 const VERSION = 5;
 
-console.log('[Scene] Version:', VERSION);
-
-export type ActorID = string;
-
-export type Vector3 = {
-  x: number;
-  y: number;
-  z: number;
-};
-
-type NetworkedAnimationAction = {
-  type: number;
-  state: number;
-};
-
-export type Actor = {
-  action: NetworkedAnimationAction;
-  actorId: ActorID;
-  assetId: number;
-  color: number;
-  deleted: boolean;
-  position: Vector3;
-  rotation: Vector3;
-  scale: Vector3;
-  speed: number;
-  up: Vector3;
-};
-
-export type Update = Partial<Actor>;
-
-export type Diff = {
-  v: number;
-  d: Record<ActorID, Update>;
-};
-
-export type WirePlaceSceneSerialized = Uint8Array;
-
-function createNewActor(actorId: ActorID): Actor {
-  return {
-    actorId,
-    deleted: false,
-    action: {
-      type: 0,
-      state: -1,
-    },
-    speed: 1.4,
-    color: 0,
-    assetId: 0,
-    position: {
-      x: 0,
-      y: 0,
-      z: 0,
-    },
-    rotation: {
-      x: 0,
-      y: 0,
-      z: 0,
-    },
-    scale: {
-      x: 1.0,
-      y: 1.0,
-      z: 1.0,
-    },
-    up: {
-      x: 0,
-      y: 1.0,
-      z: 0,
-    },
-  };
-}
-
-export function serializeDiff(diff: Diff): WirePlaceSceneSerialized {
-  const builder = new flatbuffers.Builder();
-
-  const uFBs = Object.keys(diff.d).map((actorId) => {
-    const u = diff.d[actorId];
-    const idFB = builder.createString(actorId);
-
-    WPFlatbuffers.Update.startUpdate(builder);
-    WPFlatbuffers.Update.addActorId(builder, idFB);
-    if (u.color !== undefined) {
-      WPFlatbuffers.Update.addColor(
-        builder,
-        WPFlatbuffers.UInt.createUInt(builder, u.color)
-      );
-    }
-    if (u.assetId !== undefined) {
-      WPFlatbuffers.Update.addAssetId(
-        builder,
-        WPFlatbuffers.UShort.createUShort(builder, u.assetId)
-      );
-    }
-    if (u.speed !== undefined) {
-      WPFlatbuffers.Update.addSpeed(
-        builder,
-        WPFlatbuffers.Float.createFloat(builder, u.speed)
-      );
-    }
-    if (u.deleted) {
-      WPFlatbuffers.Update.addDeleted(builder, true);
-    }
-    if (u.action) {
-      WPFlatbuffers.Update.addAction(
-        builder,
-        WPFlatbuffers.NetworkedAnimationAction.createNetworkedAnimationAction(
-          builder,
-          u.action.type,
-          u.action.state
-        )
-      );
-    }
-    if (u.position !== undefined) {
-      const { x, y, z } = u.position;
-      WPFlatbuffers.Update.addPosition(
-        builder,
-        WPFlatbuffers.Vector3.createVector3(builder, x, y, z)
-      );
-    }
-    if (u.rotation !== undefined) {
-      const { x, y, z } = u.rotation;
-      WPFlatbuffers.Update.addRotation(
-        builder,
-        WPFlatbuffers.Vector3.createVector3(builder, x, y, z)
-      );
-    }
-    if (u.scale !== undefined) {
-      const { x, y, z } = u.scale;
-      WPFlatbuffers.Update.addScale(
-        builder,
-        WPFlatbuffers.Vector3.createVector3(builder, x, y, z)
-      );
-    }
-    if (u.up !== undefined) {
-      const { x, y, z } = u.up;
-      WPFlatbuffers.Update.addUp(
-        builder,
-        WPFlatbuffers.Vector3.createVector3(builder, x, y, z)
-      );
-    }
-    const uFB = WPFlatbuffers.Update.endUpdate(builder);
-    return uFB;
-  });
-
-  const updatesFB = WPFlatbuffers.Diff.createUpdatesVector(builder, uFBs);
-
-  WPFlatbuffers.Diff.startDiff(builder);
-  WPFlatbuffers.Diff.addVersion(
-    builder,
-    WPFlatbuffers.UShort.createUShort(builder, diff.v)
-  );
-  WPFlatbuffers.Diff.addUpdates(builder, updatesFB);
-  const diffFB = WPFlatbuffers.Diff.endDiff(builder);
-  WPFlatbuffers.Diff.finishDiffBuffer(builder, diffFB);
-
-  return builder.asUint8Array();
-}
-
-export function deserializeDiff(data: WirePlaceSceneSerialized): Diff {
-  const buf = new flatbuffers.ByteBuffer(data);
-  const diffFB = WPFlatbuffers.Diff.getRootAsDiff(buf);
-  const diff: Diff = { v: diffFB.version()?.value() || 0, d: {} };
-
-  for (let i = 0; i < diffFB.updatesLength(); i += 1) {
-    const uFB = diffFB.updates(i);
-    if (!uFB) {
-      continue;
-    }
-
-    const actorId = uFB.actorId();
-    if (!actorId) {
-      continue;
-    }
-
-    const u: Update = { actorId };
-    if (uFB.deleted()) {
-      u.deleted = true;
-    }
-
-    if (uFB.color()) {
-      u.color = uFB.color()?.value();
-    }
-
-    if (uFB.assetId()) {
-      u.assetId = uFB.assetId()?.value();
-    }
-
-    if (uFB.speed()) {
-      u.speed = uFB.speed()?.value();
-    }
-
-    const action = uFB.action();
-    if (action) {
-      u.action = {
-        type: action.type(),
-        state: action.state(),
-      };
-    }
-
-    let v = uFB.position();
-    if (v) {
-      u.position = { x: v.x(), y: v.y(), z: v.z() };
-    }
-
-    v = uFB.rotation();
-    if (v) {
-      u.rotation = { x: v.x(), y: v.y(), z: v.z() };
-    }
-
-    v = uFB.scale();
-    if (v) {
-      u.scale = { x: v.x(), y: v.y(), z: v.z() };
-    }
-
-    v = uFB.up();
-    if (v) {
-      u.up = { x: v.x(), y: v.y(), z: v.z() };
-    }
-
-    diff.d[actorId] = u;
-  }
-
-  return diff;
-}
-
 class WirePlaceScene extends EventEmitter {
-  _version: number;
+  version: number;
   _actors: Record<ActorID, Actor>;
   _updates: Record<ActorID, Update>;
 
   constructor(isMaster: boolean = false) {
     super();
-    this._version = VERSION;
+    this.version = VERSION;
     this._actors = {};
     this._updates = {};
   }
@@ -328,11 +111,11 @@ class WirePlaceScene extends EventEmitter {
   retrieveDiff(getAll: boolean = false): Diff {
     if (getAll) {
       const updates = this._actors;
-      return { v: this._version, d: updates };
+      return { v: this.version, d: updates };
     } else {
       const updates = this._updates;
       this._updates = {};
-      return { v: this._version, d: updates };
+      return { v: this.version, d: updates };
     }
   }
 
@@ -347,7 +130,7 @@ class WirePlaceScene extends EventEmitter {
   }
 
   applyDiff(diff: Diff, skipId: string | null = null) {
-    if (diff.v !== this._version) {
+    if (diff.v !== this.version) {
       console.error('Invalid message version received:', diff.v);
       return;
     }
