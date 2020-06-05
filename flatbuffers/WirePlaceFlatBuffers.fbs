@@ -24,8 +24,9 @@ struct NetworkedAnimationAction{
 }
 
 table Update {
+  revision: UShort;
   action: NetworkedAnimationAction;
-  actorId: string;
+  actorId: UShort;
   assetId: UShort;
   color: UInt;
   deleted: bool = false;

@@ -7,19 +7,22 @@ import {
   Update,
   WirePlaceSceneSerialized,
 } from './types';
-import { createNewActor, serializeDiff, deserializeDiff } from './utils';
+import {
+  createNewActor,
+  serializeDiff,
+  deserializeDiff,
+  deserializeID,
+} from './utils';
 
 // Serialization versioning
-const VERSION = 5;
+const VERSION = 6;
 
 export interface IScene<T> {
   version: number;
 
-  addActor(actorId: ActorID): void;
   clear(): void;
   getActor(actorId: ActorID): Actor | null;
   getActorOrThrow(actorId: ActorID): Actor;
-  removeActor(actorId: ActorID): boolean;
   updateActor(actorId: ActorID, u: Update, invokeCallbacks?: boolean): boolean;
 
   onActorUpdate(
@@ -33,21 +36,35 @@ export interface IScene<T> {
   retrieveSerializedDiff(getAll: boolean): { count: number; data: T };
 }
 
+export interface IMasterScene<T> extends IScene<T> {
+  addActor(actorId: ActorID): void;
+  removeActor(actorId: ActorID): boolean;
+  nextActorID(): ActorID;
+}
+
 class WirePlaceScene extends EventEmitter
-  implements IScene<WirePlaceSceneSerialized> {
+  implements IMasterScene<WirePlaceSceneSerialized> {
   version: number;
   _actors: Record<ActorID, Actor>;
   _updates: Record<ActorID, Update>;
+  _nextId: number;
 
   constructor() {
     super();
     this.version = VERSION;
     this._actors = {};
     this._updates = {};
+    this._nextId = 0;
   }
 
   clear() {
     this.forEach((actor, actorId) => this.removeActor(actorId));
+  }
+
+  nextActorID(): ActorID {
+    const actorId = deserializeID(this._nextId);
+    this._nextId += 1;
+    return actorId;
   }
 
   onActorUpdate(

@@ -12,6 +12,7 @@ export type NetworkedAnimationAction = {
 };
 
 export type Actor = {
+  revision: number;
   action: NetworkedAnimationAction;
   actorId: ActorID;
   assetId: number;

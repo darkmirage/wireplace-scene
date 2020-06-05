@@ -11,6 +11,7 @@ import {
 
 export function createNewActor(actorId: ActorID): Actor {
   return {
+    revision: 0,
     actorId,
     deleted: false,
     action: {
@@ -43,15 +44,33 @@ export function createNewActor(actorId: ActorID): Actor {
   };
 }
 
+export function serializeID(actorId: ActorID): number {
+  return parseInt(actorId.substr(1), 10);
+}
+
+export function deserializeID(id: number): ActorID {
+  return `a${id}`;
+}
+
 export function serializeDiff(diff: Diff): WirePlaceSceneSerialized {
   const builder = new flatbuffers.Builder();
 
   const uFBs = Object.keys(diff.d).map((actorId) => {
     const u = diff.d[actorId];
-    const idFB = builder.createString(actorId);
+    const id = serializeID(actorId);
 
     WPFlatbuffers.Update.startUpdate(builder);
-    WPFlatbuffers.Update.addActorId(builder, idFB);
+    WPFlatbuffers.Update.addActorId(
+      builder,
+      WPFlatbuffers.UShort.createUShort(builder, id)
+    );
+
+    if (u.revision !== undefined) {
+      WPFlatbuffers.Update.addRevision(
+        builder,
+        WPFlatbuffers.UShort.createUShort(builder, u.revision)
+      );
+    }
     if (u.color !== undefined) {
       WPFlatbuffers.Update.addColor(
         builder,
@@ -140,12 +159,18 @@ export function deserializeDiff(data: WirePlaceSceneSerialized): Diff {
       continue;
     }
 
-    const actorId = uFB.actorId();
-    if (!actorId) {
+    const id = uFB.actorId()?.value();
+    if (id === undefined) {
       continue;
     }
+    const actorId = deserializeID(id);
 
     const u: Update = { actorId };
+
+    if (uFB.revision()) {
+      u.revision = uFB.revision()?.value();
+    }
+
     if (uFB.deleted()) {
       u.deleted = true;
     }

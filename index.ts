@@ -1,4 +1,4 @@
-import WirePlaceScene, { IScene } from './WirePlaceScene';
+import WirePlaceScene, { IScene, IMasterScene } from './WirePlaceScene';
 
 export { serializeDiff, deserializeDiff } from './utils';
 
@@ -10,4 +10,4 @@ export {
   WirePlaceSceneSerialized,
 } from './types';
 
-export { WirePlaceScene, IScene };
+export { WirePlaceScene, IScene, IMasterScene };
