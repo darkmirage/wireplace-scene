@@ -1,6 +1,6 @@
 export type ActorID = string;
 
-export type Vector3 = {
+export type WirePlaceVector3 = {
   x: number;
   y: number;
   z: number;
@@ -19,12 +19,12 @@ export type Actor = {
   color: number;
   deleted: boolean;
   movable: boolean;
-  position: Vector3;
+  position: WirePlaceVector3;
   revision: number;
-  rotation: Vector3;
-  scale: Vector3;
+  rotation: WirePlaceVector3;
+  scale: WirePlaceVector3;
   speed: number;
-  up: Vector3;
+  up: WirePlaceVector3;
 };
 
 export type Update = Partial<Actor>;
