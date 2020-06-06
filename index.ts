@@ -1,6 +1,6 @@
 import WirePlaceScene, { IScene, IMasterScene } from './WirePlaceScene';
 
-export { serializeDiff, deserializeDiff } from './utils';
+export { serializeDiff, deserializeDiff } from './serialization';
 
 export {
   Actor,

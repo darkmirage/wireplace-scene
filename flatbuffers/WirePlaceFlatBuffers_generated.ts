@@ -189,6 +189,47 @@ export namespace WPFlatbuffers {
  * @constructor
  */
 export namespace WPFlatbuffers {
+  export class Bool {
+    bb: flatbuffers.ByteBuffer | null = null;
+
+    bb_pos: number = 0;
+    /**
+     * @param number i
+     * @param flatbuffers.ByteBuffer bb
+     * @returns Bool
+     */
+    __init(i: number, bb: flatbuffers.ByteBuffer): Bool {
+      this.bb_pos = i;
+      this.bb = bb;
+      return this;
+    }
+
+    /**
+     * @returns boolean
+     */
+    value(): boolean {
+      return !!this.bb!.readInt8(this.bb_pos);
+    }
+
+    /**
+     * @param flatbuffers.Builder builder
+     * @param boolean value
+     * @returns flatbuffers.Offset
+     */
+    static createBool(
+      builder: flatbuffers.Builder,
+      value: boolean
+    ): flatbuffers.Offset {
+      builder.prep(1, 1);
+      builder.writeInt8(+value);
+      return builder.offset();
+    }
+  }
+}
+/**
+ * @constructor
+ */
+export namespace WPFlatbuffers {
   export class NetworkedAnimationAction {
     bb: flatbuffers.ByteBuffer | null = null;
 
@@ -284,27 +325,13 @@ export namespace WPFlatbuffers {
     }
 
     /**
-     * @param WPFlatbuffers.UShort= obj
-     * @returns WPFlatbuffers.UShort|null
-     */
-    revision(obj?: WPFlatbuffers.UShort): WPFlatbuffers.UShort | null {
-      var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset
-        ? (obj || new WPFlatbuffers.UShort()).__init(
-            this.bb_pos + offset,
-            this.bb!
-          )
-        : null;
-    }
-
-    /**
      * @param WPFlatbuffers.NetworkedAnimationAction= obj
      * @returns WPFlatbuffers.NetworkedAnimationAction|null
      */
     action(
       obj?: WPFlatbuffers.NetworkedAnimationAction
     ): WPFlatbuffers.NetworkedAnimationAction | null {
-      var offset = this.bb!.__offset(this.bb_pos, 6);
+      var offset = this.bb!.__offset(this.bb_pos, 4);
       return offset
         ? (obj || new WPFlatbuffers.NetworkedAnimationAction()).__init(
             this.bb_pos + offset,
@@ -318,7 +345,7 @@ export namespace WPFlatbuffers {
      * @returns WPFlatbuffers.UShort|null
      */
     actorId(obj?: WPFlatbuffers.UShort): WPFlatbuffers.UShort | null {
-      var offset = this.bb!.__offset(this.bb_pos, 8);
+      var offset = this.bb!.__offset(this.bb_pos, 6);
       return offset
         ? (obj || new WPFlatbuffers.UShort()).__init(
             this.bb_pos + offset,
@@ -332,9 +359,23 @@ export namespace WPFlatbuffers {
      * @returns WPFlatbuffers.UShort|null
      */
     assetId(obj?: WPFlatbuffers.UShort): WPFlatbuffers.UShort | null {
-      var offset = this.bb!.__offset(this.bb_pos, 10);
+      var offset = this.bb!.__offset(this.bb_pos, 8);
       return offset
         ? (obj || new WPFlatbuffers.UShort()).__init(
+            this.bb_pos + offset,
+            this.bb!
+          )
+        : null;
+    }
+
+    /**
+     * @param WPFlatbuffers.Bool= obj
+     * @returns WPFlatbuffers.Bool|null
+     */
+    collidable(obj?: WPFlatbuffers.Bool): WPFlatbuffers.Bool | null {
+      var offset = this.bb!.__offset(this.bb_pos, 10);
+      return offset
+        ? (obj || new WPFlatbuffers.Bool()).__init(
             this.bb_pos + offset,
             this.bb!
           )
@@ -364,13 +405,41 @@ export namespace WPFlatbuffers {
     }
 
     /**
+     * @param WPFlatbuffers.Bool= obj
+     * @returns WPFlatbuffers.Bool|null
+     */
+    movable(obj?: WPFlatbuffers.Bool): WPFlatbuffers.Bool | null {
+      var offset = this.bb!.__offset(this.bb_pos, 16);
+      return offset
+        ? (obj || new WPFlatbuffers.Bool()).__init(
+            this.bb_pos + offset,
+            this.bb!
+          )
+        : null;
+    }
+
+    /**
      * @param WPFlatbuffers.Vector3= obj
      * @returns WPFlatbuffers.Vector3|null
      */
     position(obj?: WPFlatbuffers.Vector3): WPFlatbuffers.Vector3 | null {
-      var offset = this.bb!.__offset(this.bb_pos, 16);
+      var offset = this.bb!.__offset(this.bb_pos, 18);
       return offset
         ? (obj || new WPFlatbuffers.Vector3()).__init(
+            this.bb_pos + offset,
+            this.bb!
+          )
+        : null;
+    }
+
+    /**
+     * @param WPFlatbuffers.UShort= obj
+     * @returns WPFlatbuffers.UShort|null
+     */
+    revision(obj?: WPFlatbuffers.UShort): WPFlatbuffers.UShort | null {
+      var offset = this.bb!.__offset(this.bb_pos, 20);
+      return offset
+        ? (obj || new WPFlatbuffers.UShort()).__init(
             this.bb_pos + offset,
             this.bb!
           )
@@ -382,7 +451,7 @@ export namespace WPFlatbuffers {
      * @returns WPFlatbuffers.Vector3|null
      */
     rotation(obj?: WPFlatbuffers.Vector3): WPFlatbuffers.Vector3 | null {
-      var offset = this.bb!.__offset(this.bb_pos, 18);
+      var offset = this.bb!.__offset(this.bb_pos, 22);
       return offset
         ? (obj || new WPFlatbuffers.Vector3()).__init(
             this.bb_pos + offset,
@@ -396,7 +465,7 @@ export namespace WPFlatbuffers {
      * @returns WPFlatbuffers.Vector3|null
      */
     scale(obj?: WPFlatbuffers.Vector3): WPFlatbuffers.Vector3 | null {
-      var offset = this.bb!.__offset(this.bb_pos, 20);
+      var offset = this.bb!.__offset(this.bb_pos, 24);
       return offset
         ? (obj || new WPFlatbuffers.Vector3()).__init(
             this.bb_pos + offset,
@@ -410,7 +479,7 @@ export namespace WPFlatbuffers {
      * @returns WPFlatbuffers.Float|null
      */
     speed(obj?: WPFlatbuffers.Float): WPFlatbuffers.Float | null {
-      var offset = this.bb!.__offset(this.bb_pos, 22);
+      var offset = this.bb!.__offset(this.bb_pos, 26);
       return offset
         ? (obj || new WPFlatbuffers.Float()).__init(
             this.bb_pos + offset,
@@ -424,7 +493,7 @@ export namespace WPFlatbuffers {
      * @returns WPFlatbuffers.Vector3|null
      */
     up(obj?: WPFlatbuffers.Vector3): WPFlatbuffers.Vector3 | null {
-      var offset = this.bb!.__offset(this.bb_pos, 24);
+      var offset = this.bb!.__offset(this.bb_pos, 28);
       return offset
         ? (obj || new WPFlatbuffers.Vector3()).__init(
             this.bb_pos + offset,
@@ -437,18 +506,7 @@ export namespace WPFlatbuffers {
      * @param flatbuffers.Builder builder
      */
     static startUpdate(builder: flatbuffers.Builder) {
-      builder.startObject(11);
-    }
-
-    /**
-     * @param flatbuffers.Builder builder
-     * @param flatbuffers.Offset revisionOffset
-     */
-    static addRevision(
-      builder: flatbuffers.Builder,
-      revisionOffset: flatbuffers.Offset
-    ) {
-      builder.addFieldStruct(0, revisionOffset, 0);
+      builder.startObject(13);
     }
 
     /**
@@ -459,7 +517,7 @@ export namespace WPFlatbuffers {
       builder: flatbuffers.Builder,
       actionOffset: flatbuffers.Offset
     ) {
-      builder.addFieldStruct(1, actionOffset, 0);
+      builder.addFieldStruct(0, actionOffset, 0);
     }
 
     /**
@@ -470,7 +528,7 @@ export namespace WPFlatbuffers {
       builder: flatbuffers.Builder,
       actorIdOffset: flatbuffers.Offset
     ) {
-      builder.addFieldStruct(2, actorIdOffset, 0);
+      builder.addFieldStruct(1, actorIdOffset, 0);
     }
 
     /**
@@ -481,7 +539,18 @@ export namespace WPFlatbuffers {
       builder: flatbuffers.Builder,
       assetIdOffset: flatbuffers.Offset
     ) {
-      builder.addFieldStruct(3, assetIdOffset, 0);
+      builder.addFieldStruct(2, assetIdOffset, 0);
+    }
+
+    /**
+     * @param flatbuffers.Builder builder
+     * @param flatbuffers.Offset collidableOffset
+     */
+    static addCollidable(
+      builder: flatbuffers.Builder,
+      collidableOffset: flatbuffers.Offset
+    ) {
+      builder.addFieldStruct(3, collidableOffset, 0);
     }
 
     /**
@@ -505,13 +574,35 @@ export namespace WPFlatbuffers {
 
     /**
      * @param flatbuffers.Builder builder
+     * @param flatbuffers.Offset movableOffset
+     */
+    static addMovable(
+      builder: flatbuffers.Builder,
+      movableOffset: flatbuffers.Offset
+    ) {
+      builder.addFieldStruct(6, movableOffset, 0);
+    }
+
+    /**
+     * @param flatbuffers.Builder builder
      * @param flatbuffers.Offset positionOffset
      */
     static addPosition(
       builder: flatbuffers.Builder,
       positionOffset: flatbuffers.Offset
     ) {
-      builder.addFieldStruct(6, positionOffset, 0);
+      builder.addFieldStruct(7, positionOffset, 0);
+    }
+
+    /**
+     * @param flatbuffers.Builder builder
+     * @param flatbuffers.Offset revisionOffset
+     */
+    static addRevision(
+      builder: flatbuffers.Builder,
+      revisionOffset: flatbuffers.Offset
+    ) {
+      builder.addFieldStruct(8, revisionOffset, 0);
     }
 
     /**
@@ -522,7 +613,7 @@ export namespace WPFlatbuffers {
       builder: flatbuffers.Builder,
       rotationOffset: flatbuffers.Offset
     ) {
-      builder.addFieldStruct(7, rotationOffset, 0);
+      builder.addFieldStruct(9, rotationOffset, 0);
     }
 
     /**
@@ -533,7 +624,7 @@ export namespace WPFlatbuffers {
       builder: flatbuffers.Builder,
       scaleOffset: flatbuffers.Offset
     ) {
-      builder.addFieldStruct(8, scaleOffset, 0);
+      builder.addFieldStruct(10, scaleOffset, 0);
     }
 
     /**
@@ -544,7 +635,7 @@ export namespace WPFlatbuffers {
       builder: flatbuffers.Builder,
       speedOffset: flatbuffers.Offset
     ) {
-      builder.addFieldStruct(9, speedOffset, 0);
+      builder.addFieldStruct(11, speedOffset, 0);
     }
 
     /**
@@ -552,7 +643,7 @@ export namespace WPFlatbuffers {
      * @param flatbuffers.Offset upOffset
      */
     static addUp(builder: flatbuffers.Builder, upOffset: flatbuffers.Offset) {
-      builder.addFieldStruct(10, upOffset, 0);
+      builder.addFieldStruct(12, upOffset, 0);
     }
 
     /**
@@ -566,26 +657,30 @@ export namespace WPFlatbuffers {
 
     static createUpdate(
       builder: flatbuffers.Builder,
-      revisionOffset: flatbuffers.Offset,
       actionOffset: flatbuffers.Offset,
       actorIdOffset: flatbuffers.Offset,
       assetIdOffset: flatbuffers.Offset,
+      collidableOffset: flatbuffers.Offset,
       colorOffset: flatbuffers.Offset,
       deleted: boolean,
+      movableOffset: flatbuffers.Offset,
       positionOffset: flatbuffers.Offset,
+      revisionOffset: flatbuffers.Offset,
       rotationOffset: flatbuffers.Offset,
       scaleOffset: flatbuffers.Offset,
       speedOffset: flatbuffers.Offset,
       upOffset: flatbuffers.Offset
     ): flatbuffers.Offset {
       Update.startUpdate(builder);
-      Update.addRevision(builder, revisionOffset);
       Update.addAction(builder, actionOffset);
       Update.addActorId(builder, actorIdOffset);
       Update.addAssetId(builder, assetIdOffset);
+      Update.addCollidable(builder, collidableOffset);
       Update.addColor(builder, colorOffset);
       Update.addDeleted(builder, deleted);
+      Update.addMovable(builder, movableOffset);
       Update.addPosition(builder, positionOffset);
+      Update.addRevision(builder, revisionOffset);
       Update.addRotation(builder, rotationOffset);
       Update.addScale(builder, scaleOffset);
       Update.addSpeed(builder, speedOffset);

@@ -12,13 +12,15 @@ export type NetworkedAnimationAction = {
 };
 
 export type Actor = {
-  revision: number;
   action: NetworkedAnimationAction;
   actorId: ActorID;
   assetId: number;
+  collidable: boolean;
   color: number;
   deleted: boolean;
+  movable: boolean;
   position: Vector3;
+  revision: number;
   rotation: Vector3;
   scale: Vector3;
   speed: number;

@@ -12,10 +12,10 @@ import {
   serializeDiff,
   deserializeDiff,
   deserializeID,
-} from './utils';
+} from './serialization';
 
 // Serialization versioning
-const VERSION = 6;
+const VERSION = 7;
 
 const REV_BUFFER = 200;
 const MAX_REV = 2000;

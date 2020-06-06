@@ -18,19 +18,25 @@ struct UInt {
   value: uint ;
 }
 
+struct Bool {
+  value: bool;
+}
+
 struct NetworkedAnimationAction{
   type: ushort;
   state: short;
 }
 
 table Update {
-  revision: UShort;
   action: NetworkedAnimationAction;
   actorId: UShort;
   assetId: UShort;
+  collidable: Bool;
   color: UInt;
   deleted: bool = false;
+  movable: Bool;
   position: Vector3;
+  revision: UShort;
   rotation: Vector3;
   scale: Vector3;
   speed: Float;

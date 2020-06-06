@@ -13,6 +13,8 @@ export function createNewActor(actorId: ActorID): Actor {
   return {
     revision: 0,
     actorId,
+    collidable: true,
+    movable: false,
     deleted: false,
     action: {
       type: 0,
@@ -87,6 +89,18 @@ export function serializeDiff(diff: Diff): WirePlaceSceneSerialized {
       WPFlatbuffers.Update.addSpeed(
         builder,
         WPFlatbuffers.Float.createFloat(builder, u.speed)
+      );
+    }
+    if (u.movable !== undefined) {
+      WPFlatbuffers.Update.addMovable(
+        builder,
+        WPFlatbuffers.Bool.createBool(builder, u.movable)
+      );
+    }
+    if (u.collidable !== undefined) {
+      WPFlatbuffers.Update.addCollidable(
+        builder,
+        WPFlatbuffers.Bool.createBool(builder, u.collidable)
       );
     }
     if (u.deleted) {
@@ -185,6 +199,14 @@ export function deserializeDiff(data: WirePlaceSceneSerialized): Diff {
 
     if (uFB.speed()) {
       u.speed = uFB.speed()?.value();
+    }
+
+    if (uFB.movable()) {
+      u.movable = uFB.movable()?.value();
+    }
+
+    if (uFB.collidable()) {
+      u.collidable = uFB.collidable()?.value();
     }
 
     const action = uFB.action();
