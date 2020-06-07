@@ -45,6 +45,13 @@ export interface IMasterScene<T> extends IScene<T> {
   nextActorID(): ActorID;
 }
 
+export function isRevisionNewer(currentRev: number, newRev: number): boolean {
+  if (currentRev >= MAX_REV - REV_BUFFER && newRev < REV_BUFFER) {
+    currentRev = 0;
+  }
+  return newRev > currentRev;
+}
+
 class WirePlaceScene extends EventEmitter
   implements IMasterScene<WirePlaceSceneSerialized> {
   version: number;
@@ -133,11 +140,7 @@ class WirePlaceScene extends EventEmitter
     let newRev = u.revision;
 
     if (newRev !== undefined) {
-      if (currentRev >= MAX_REV - REV_BUFFER && newRev < REV_BUFFER) {
-        currentRev = 0;
-      }
-
-      if (currentRev >= newRev) {
+      if (!isRevisionNewer(currentRev, newRev)) {
         return false;
       }
     } else {
